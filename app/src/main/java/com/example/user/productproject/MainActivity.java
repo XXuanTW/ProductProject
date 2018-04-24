@@ -65,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
         textWareHouse = (TextView)findViewById(R.id.textWarehouse);
         textProduct = (TextView)findViewById(R.id.textProduct);
         textBarCode = (TextView)findViewById(R.id.textBarCode);
-        textCheckTime = (TextView)findViewById(R.id.textCheckTime);
         toolbar = (Toolbar)findViewById(R.id.toolbar);
         liftmenu = (NavigationView)findViewById(R.id.liftmenu);
         mainlayout = (DrawerLayout)findViewById(R.id.main_layout);
@@ -190,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
     //ToolBar
     private void SetToolBar() {
 
-        toolbar.setTitle("檢票系統");
+        toolbar.setTitle("盤點系統");
 
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
@@ -228,8 +227,14 @@ public class MainActivity extends AppCompatActivity {
                 // 取得選項id
                 int id = item.getItemId();
                 // 依照id判斷點了哪個項目並做相應事件
-                if (id == R.id.action_camera) {
+                if (id == R.id.action_inventory) {
                     Toast.makeText(MainActivity.this, "目前顯示頁面：盤點系統", Toast.LENGTH_SHORT).show();
+                }else if(id == R.id.action_ProductView){
+                    Intent intent = new Intent();
+                    intent.setClass(MainActivity.this,MainProduct.class);
+                    MainActivity.this.finish();
+                    startActivity(intent);
+                    return true;
                 }
                 return false;
             }

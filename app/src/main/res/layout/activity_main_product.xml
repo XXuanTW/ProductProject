@@ -2,7 +2,7 @@
 <android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main_layout"
+    android:id="@+id/Product_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
@@ -17,20 +17,12 @@
             android:background="?attr/colorPrimary"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
 
-        <SurfaceView
-            android:id="@+id/CamareView"
-            android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:layout_below="@+id/toolbar"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp" />
 
         <RelativeLayout
             android:id="@+id/WarehouseLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/CamareView">
+            android:layout_below="@+id/toolbar">
 
             <TextView
                 android:id="@+id/textWarehouseText"
@@ -73,12 +65,34 @@
                 android:text=""
                 android:textSize="10pt" />
         </RelativeLayout>
+        <RelativeLayout
+            android:id="@+id/ProductIDTextlayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/ProductTextlayout">
 
+            <TextView
+                android:id="@+id/textProductIDText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="產品編號："
+                android:textSize="10pt" />
+
+            <TextView
+                android:id="@+id/textProductID"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/textProductIDText"
+                android:gravity="center_horizontal"
+                android:text=""
+                android:textSize="10pt" />
+        </RelativeLayout>
         <RelativeLayout
             android:id="@+id/BarCodeTextLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/ProductTextlayout">
+            android:layout_below="@+id/ProductIDTextlayout">
 
             <TextView
                 android:id="@+id/textBarCodeText"
@@ -97,12 +111,34 @@
                 android:text=""
                 android:textSize="10pt" />
         </RelativeLayout>
+        <RelativeLayout
+            android:id="@+id/CheckTimetext"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/BarCodeTextLayout">
 
+            <TextView
+                android:id="@+id/textCheckTimetext"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="上次盤點時間："
+                android:textSize="10pt" />
+
+            <TextView
+                android:id="@+id/textCheckTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/textCheckTimetext"
+                android:gravity="center_horizontal"
+                android:text=""
+                android:textSize="10pt" />
+        </RelativeLayout>
         <RelativeLayout
             android:id="@+id/ProductImglayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/BarCodeTextLayout">
+            android:layout_below="@+id/CheckTimetext">
 
             <TextView
                 android:id="@+id/textImgText"
@@ -117,41 +153,29 @@
                 android:layout_height="30pt"
                 android:layout_toRightOf="@+id/textImgText" />
         </RelativeLayout>
-
-        <LinearLayout
-            android:id="@+id/AStockLayout"
+        <RelativeLayout
+            android:id="@+id/Stocktext"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/ProductImglayout"
-            android:orientation="horizontal">
+            android:layout_below="@+id/ProductImglayout">
+
             <TextView
-                android:id="@+id/textAStockText"
+                android:id="@+id/textStocktext"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="實際庫存："
-                android:textSize="10pt" />/>
-            <EditText
-                android:id="@+id/StockeditText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:ems="4"
-                android:text=""
-                android:textSize="10pt" />/>
-
-            <Button
-                android:id="@+id/CheckButton"
-                android:layout_width="173dp"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/CheckTimeLayout"
-                android:layout_centerHorizontal="true"
-                android:layout_weight="1"
                 android:gravity="center_horizontal"
-                android:text="確認"
+                android:text="現有庫存："
                 android:textSize="10pt" />
-        </LinearLayout>
 
-
+            <TextView
+                android:id="@+id/textStock"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/textStocktext"
+                android:gravity="center_horizontal"
+                android:text=""
+                android:textSize="10pt" />
+        </RelativeLayout>
     </RelativeLayout>
 
     <android.support.design.widget.NavigationView
