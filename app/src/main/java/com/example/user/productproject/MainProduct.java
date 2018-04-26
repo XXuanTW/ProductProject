@@ -13,11 +13,13 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,6 +30,12 @@ import java.util.ArrayList;
 
 public class MainProduct extends AppCompatActivity {
     Toolbar toolbar;
+    TextView textProduct;
+    TextView textWarehouse;
+    TextView textProductID;
+    TextView textBarCode;
+    TextView textCheckTime;
+    TextView textStock;
     NavigationView liftmenu;
     DrawerLayout mainlayout;
     @Override
@@ -37,8 +45,18 @@ public class MainProduct extends AppCompatActivity {
         toolbar = (Toolbar)findViewById(R.id.toolbar);
         liftmenu = (NavigationView)findViewById(R.id.liftmenu);
         mainlayout = (DrawerLayout)findViewById(R.id.Product_layout);
+        textProduct = (TextView)findViewById(R.id.textProduct);
+        textWarehouse = (TextView)findViewById(R.id.textWarehouse);
+        textProductID = (TextView)findViewById(R.id.textProductID);
+        textBarCode = (TextView)findViewById(R.id.textBarCode);
+        textCheckTime = (TextView)findViewById(R.id.textCheckTime);
+        textStock = (TextView)findViewById(R.id.textStock);
+        Bundle bundle = this.getIntent().getExtras();
+        String BarcodeRead = bundle.getString("Barcode");
         SetToolBar();
         SetLifeMenu();
+        String url = "http://www.itioi.com/TestP.php?shid=1&barcode="+BarcodeRead;
+        new TransTask().execute(url);
     }
     //Json 解析
     class TransTask extends AsyncTask<String, Void, String> {
@@ -73,15 +91,28 @@ public class MainProduct extends AppCompatActivity {
                 JSONArray array = new JSONArray(s);
                 for (int i=0; i<array.length(); i++){
                     JSONObject obj = array.getJSONObject(i);
-//                    int id = obj.getInt("id");
-                    Json t = new Json();
+                    String shname = obj.getString("sh_name");
+                    String p_name = obj.getString("p_name");
+                    String p_no = obj.getString("p_no");
+                    String p_barcode = obj.getString("p_barcode");
+                    String p_inventory_date = obj.getString("p_inventory_date");
+                    String p_photo = obj.getString("p_photo");
+                    String p_count = obj.getString("p_count");
+                    Json t = new Json(shname,p_name,p_no, p_barcode,p_inventory_date, p_photo,p_count);
 
+                    textProduct.setText(p_name);
+                    textWarehouse.setText(shname);
+                    textProductID.setText(p_no);
+                    textBarCode.setText(p_barcode);
+                    textCheckTime.setText(p_inventory_date);
+                    textStock.setText(p_count);
                     trans.add(t);
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
+
     }
     //ToolBar
     private void SetToolBar() {

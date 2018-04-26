@@ -149,8 +149,8 @@
 
             <ImageView
                 android:id="@+id/ProductImgView"
-                android:layout_width="30pt"
-                android:layout_height="30pt"
+                android:layout_width="100pt"
+                android:layout_height="100pt"
                 android:layout_toRightOf="@+id/textImgText" />
         </RelativeLayout>
         <RelativeLayout
