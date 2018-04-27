@@ -2,13 +2,13 @@ package com.example.user.productproject;
 
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
@@ -19,7 +19,6 @@ import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -92,13 +91,14 @@ public class MainProduct extends AppCompatActivity {
                 for (int i=0; i<array.length(); i++){
                     JSONObject obj = array.getJSONObject(i);
                     String shname = obj.getString("sh_name");
+                    String sh_id = obj.getString("sh_id");
                     String p_name = obj.getString("p_name");
                     String p_no = obj.getString("p_no");
                     String p_barcode = obj.getString("p_barcode");
                     String p_inventory_date = obj.getString("p_inventory_date");
                     String p_photo = obj.getString("p_photo");
                     String p_count = obj.getString("p_count");
-                    Json t = new Json(shname,p_name,p_no, p_barcode,p_inventory_date, p_photo,p_count);
+                    Json t = new Json(shname,sh_id,p_name,p_no, p_barcode,p_inventory_date, p_photo,p_count);
 
                     textProduct.setText(p_name);
                     textWarehouse.setText(shname);

@@ -4,9 +4,8 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Camera;
-import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -15,7 +14,6 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.SparseArray;
@@ -23,11 +21,12 @@ import android.view.MenuItem;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
 
 import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Detector;
@@ -40,7 +39,6 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -48,7 +46,6 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     TextView textBarCode;
-    TextView textWareHouse;
     TextView textProduct;
     TextView textCheckTime;
     Toolbar toolbar;
@@ -58,16 +55,18 @@ public class MainActivity extends AppCompatActivity {
     SurfaceView CamreaView;
     BarcodeDetector barcodeDetector;
     Button CheckidButton;
+    Spinner textWareHouse;
     final int CameraID = 1;
     String url;
     String imgurl;
+    String sh;
     ImageView ProductImg;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        textWareHouse = (TextView)findViewById(R.id.textWarehouse);
+        textWareHouse = (Spinner)findViewById(R.id.textWarehouse);
         textProduct = (TextView)findViewById(R.id.textProduct);
         textBarCode = (TextView)findViewById(R.id.textBarCode);
         toolbar = (Toolbar)findViewById(R.id.toolbar);
@@ -78,6 +77,8 @@ public class MainActivity extends AppCompatActivity {
         ProductImg = (ImageView)findViewById(R.id.ProductImgView);
         SetToolBar();
         SetLifeMenu();
+        sh = "";
+        new SpinnerList().execute("http://www.itioi.com/StoreHouse.php");
 
         //QRcode掃描配置
         barcodeDetector = new BarcodeDetector.Builder(this)
@@ -149,6 +150,60 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    //StoreHouseSpinner
+    class SpinnerList extends AsyncTask<String, Void, String> {
+        protected String doInBackground(String... params) {
+            StringBuilder sb = new StringBuilder();
+            try {
+                URL url = new URL(params[0]);
+                BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
+                String line = in.readLine();
+                while (line != null) {
+                    Log.d("HTTP", line);
+                    sb.append(line);
+                    line = in.readLine();
+                }
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return sb.toString();
+        }
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            Log.d("JSON", s);
+            parseJSON(s);
+        }
+
+        private void parseJSON(String s) {
+            ArrayList<SpinnerJson> trans = new ArrayList<>();
+            try {
+                JSONArray array = new JSONArray(s);
+                for (int i=0; i<array.length(); i++){
+                    JSONObject obj = array.getJSONObject(i);
+//                    int id = obj.getInt("id");
+                    String sh_name = obj.getString("sh_name");
+                    String sh_id = obj.getString("sh_id");
+                    SpinnerJson t = new SpinnerJson(sh_name,sh_id);
+                    sh = sh + "\""+ sh_name +"\"" ;
+                    if (i != (array.length() - 1)) {
+                        sh= sh + "," ;
+                    }
+                    trans.add(t);
+                }
+                ArrayAdapter adapter = new ArrayAdapter(MainActivity.this,android.R.layout.simple_spinner_item,new String[]{"總","客"});
+                //設定下拉選單的樣式
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                textWareHouse.setAdapter(adapter);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+    }
     //Json 解析
     class TransTask extends AsyncTask<String, Void, String> {
         protected String doInBackground(String... params) {
@@ -184,17 +239,17 @@ public class MainActivity extends AppCompatActivity {
                     JSONObject obj = array.getJSONObject(i);
 //                    int id = obj.getInt("id");
                     String shname = obj.getString("sh_name");
+                    String sh_id = obj.getString("sh_id");
                     String p_name = obj.getString("p_name");
                     String p_no = obj.getString("p_no");
                     String p_barcode = obj.getString("p_barcode");
                     String p_inventory_date = obj.getString("p_inventory_date");
                     String p_photo = obj.getString("p_photo");
                     String p_count = obj.getString("p_count");
-                    Json t = new Json(shname,p_name,p_no, p_barcode,p_inventory_date, p_photo,p_count);
-                    textWareHouse.setText(shname);
+                    Json t = new Json(shname,sh_id,p_name,p_no, p_barcode,p_inventory_date, p_photo,p_count);
                     textProduct.setText(p_name);
                     textBarCode.setText(p_barcode);
-
+                    Toast.makeText(MainActivity.this, sh_id, Toast.LENGTH_SHORT).show();
                     trans.add(t);
                 }
 

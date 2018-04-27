@@ -40,14 +40,12 @@
                 android:text="倉庫："
                 android:textSize="10pt" />
 
-            <TextView
+            <Spinner
                 android:id="@+id/textWarehouse"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_toRightOf="@+id/textWarehouseText"
-                android:gravity="center_horizontal"
-                android:text=""
-                android:textSize="10pt" />
+                />
         </RelativeLayout>
 
         <RelativeLayout
