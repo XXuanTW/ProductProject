@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
     CameraSource cameraSource;
     SurfaceView CamreaView;
     BarcodeDetector barcodeDetector;
-    Button CheckidButton;
+    Button CheckButton;
     Spinner textWareHouse;
     final int CameraID = 1;
     String url;
@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
         liftmenu = (NavigationView)findViewById(R.id.liftmenu);
         mainlayout = (DrawerLayout)findViewById(R.id.main_layout);
         CamreaView = (SurfaceView) findViewById(R.id.CamareView);
-        CheckidButton = (Button)findViewById(R.id.CheckButton);
+        CheckButton = (Button)findViewById(R.id.CheckButton);
         ProductImg = (ImageView)findViewById(R.id.ProductImgView);
         StockeditText = (EditText)findViewById(R.id.StockeditText);
         SetToolBar();
@@ -162,7 +162,20 @@ public class MainActivity extends AppCompatActivity {
                     });
             }
         });
+        CheckButton.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int shidvalue = shid[textWareHouse.getSelectedItemPosition()];
+                if (!"".equals(StockeditText.getText().toString())) {
+                    int Stocke = Integer.valueOf(StockeditText.getText().toString());
+                    url = "http://www.itioi.com/UPDATE.php?sh_id=";
+                    url = url + shidvalue + "&p_id=" + PID ;
+                    url = url + "&inventory=" + Stocke;
 
+                    new TransTask().execute(url);
+                }
+            }
+        });
     }
     //ImgViewurl
 
