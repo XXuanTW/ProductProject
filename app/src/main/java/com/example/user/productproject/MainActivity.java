@@ -129,9 +129,7 @@ public class MainActivity extends AppCompatActivity {
         barcodeDetector.setProcessor(new Detector.Processor<Barcode>() {
             @Override
             public void release() {
-
             }
-
             @Override
             public void receiveDetections(Detector.Detections<Barcode> detections) {
                 final SparseArray<Barcode> qrcodes = detections.getDetectedItems();
@@ -157,7 +155,6 @@ public class MainActivity extends AppCompatActivity {
                             url = url + "&barcode=";
                             url = url+textBarCode.getText().toString();
                             new TransTask().execute(url);
-                            new DownloadImageFromInternet(ProductImg).execute(imgurl);
                         }
                     });
             }
@@ -168,8 +165,8 @@ public class MainActivity extends AppCompatActivity {
                 int shidvalue = shid[textWareHouse.getSelectedItemPosition()];
                 if (!"".equals(StockeditText.getText().toString())) {
                     int Stocke = Integer.valueOf(StockeditText.getText().toString());
-                    url = "http://www.itioi.com/UPDATE.php?sh_id=";
-                    url = url + shidvalue + "&p_id=" + PID ;
+                    url = "http://www.itioi.com/UPDATE.php?shid=";
+                    url = url + shidvalue + "&pid=" + PID ;
                     url = url + "&inventory=" + Stocke;
 
                     new TransTask().execute(url);
@@ -177,8 +174,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    //ImgViewurl
 
+    //ImgViewurl
     private class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
         ImageView imageView;
 
@@ -314,7 +311,7 @@ public class MainActivity extends AppCompatActivity {
                     imgurl = "http://p0520.com/admin/upload/product/"+p_photo;
                     trans.add(t);
                 }
-
+                new DownloadImageFromInternet(ProductImg).execute(imgurl);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
