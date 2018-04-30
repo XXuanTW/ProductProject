@@ -4,6 +4,8 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -23,6 +25,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -39,15 +42,18 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
+
 public class MainActivity extends AppCompatActivity {
     TextView textBarCode;
     TextView textProduct;
     TextView textCheckTime;
+    EditText StockeditText;
     Toolbar toolbar;
     NavigationView liftmenu;
     DrawerLayout mainlayout;
@@ -59,8 +65,10 @@ public class MainActivity extends AppCompatActivity {
     final int CameraID = 1;
     String url;
     String imgurl;
-    String sh;
+    String PID;
     ImageView ProductImg;
+    String[] sh;
+    Integer[] shid;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,9 +83,9 @@ public class MainActivity extends AppCompatActivity {
         CamreaView = (SurfaceView) findViewById(R.id.CamareView);
         CheckidButton = (Button)findViewById(R.id.CheckButton);
         ProductImg = (ImageView)findViewById(R.id.ProductImgView);
+        StockeditText = (EditText)findViewById(R.id.StockeditText);
         SetToolBar();
         SetLifeMenu();
-        sh = "";
         new SpinnerList().execute("http://www.itioi.com/StoreHouse.php");
 
         //QRcode掃描配置
@@ -133,21 +141,55 @@ public class MainActivity extends AppCompatActivity {
                         public void run() {
                             Vibrator vibrator = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
                             vibrator.vibrate(500);
-
+                            textProduct.setText("");
+                            textBarCode.setText("");
+                            StockeditText.setText("");
+                            ProductImg.setImageDrawable(null);
                             textBarCode.setText(qrcodes.valueAt(0).displayValue);
                             runCode();
 
                         }
 
                         private void runCode() {
-                            url ="http://www.itioi.com/TestP.php?shid=1&barcode=";
-                            url =  url+textBarCode.getText().toString();
+                            int shidvalue = shid[textWareHouse.getSelectedItemPosition()];
+                            url ="http://www.itioi.com/TestP.php?shid=";
+                            url = url + shidvalue;
+                            url = url + "&barcode=";
+                            url = url+textBarCode.getText().toString();
                             new TransTask().execute(url);
+                            new DownloadImageFromInternet(ProductImg).execute(imgurl);
                         }
                     });
             }
         });
 
+    }
+    //ImgViewurl
+
+    private class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
+        ImageView imageView;
+
+        public DownloadImageFromInternet(ImageView imageView) {
+            this.imageView = imageView;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            String imageURL = urls[0];
+            Bitmap bimage = null;
+            try {
+                InputStream in = new java.net.URL(imageURL).openStream();
+                bimage = BitmapFactory.decodeStream(in);
+
+            } catch (Exception e) {
+                Log.e("Error Message", e.getMessage());
+                e.printStackTrace();
+            }
+            return bimage;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            imageView.setImageBitmap(result);
+        }
     }
 
     //StoreHouseSpinner
@@ -181,22 +223,24 @@ public class MainActivity extends AppCompatActivity {
             ArrayList<SpinnerJson> trans = new ArrayList<>();
             try {
                 JSONArray array = new JSONArray(s);
+                sh = new String[array.length()];
+                shid = new Integer[array.length()];
                 for (int i=0; i<array.length(); i++){
                     JSONObject obj = array.getJSONObject(i);
-//                    int id = obj.getInt("id");
                     String sh_name = obj.getString("sh_name");
                     String sh_id = obj.getString("sh_id");
                     SpinnerJson t = new SpinnerJson(sh_name,sh_id);
-                    sh = sh + "\""+ sh_name +"\"" ;
-                    if (i != (array.length() - 1)) {
-                        sh= sh + "," ;
-                    }
+                    shid[i] = Integer.valueOf(sh_id);
+                    sh[i] = sh_name;
                     trans.add(t);
                 }
-                ArrayAdapter adapter = new ArrayAdapter(MainActivity.this,android.R.layout.simple_spinner_item,new String[]{"總","客"});
+
+                ArrayAdapter adapter = new ArrayAdapter(MainActivity.this,android.R.layout.simple_spinner_item,sh);
                 //設定下拉選單的樣式
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 textWareHouse.setAdapter(adapter);
+
+
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -204,6 +248,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
     //Json 解析
     class TransTask extends AsyncTask<String, Void, String> {
         protected String doInBackground(String... params) {
@@ -240,16 +285,20 @@ public class MainActivity extends AppCompatActivity {
 //                    int id = obj.getInt("id");
                     String shname = obj.getString("sh_name");
                     String sh_id = obj.getString("sh_id");
+                    String p_id = obj.getString("p_id");
                     String p_name = obj.getString("p_name");
                     String p_no = obj.getString("p_no");
                     String p_barcode = obj.getString("p_barcode");
                     String p_inventory_date = obj.getString("p_inventory_date");
                     String p_photo = obj.getString("p_photo");
                     String p_count = obj.getString("p_count");
-                    Json t = new Json(shname,sh_id,p_name,p_no, p_barcode,p_inventory_date, p_photo,p_count);
+                    String p_inventory = obj.getString("p_inventory");
+                    Json t = new Json(shname,sh_id,p_id,p_name,p_no, p_barcode,p_inventory_date, p_photo,p_count,p_inventory);
                     textProduct.setText(p_name);
                     textBarCode.setText(p_barcode);
-                    Toast.makeText(MainActivity.this, sh_id, Toast.LENGTH_SHORT).show();
+                    StockeditText.setText(p_count);
+                    PID = p_id;
+                    imgurl = "http://p0520.com/admin/upload/product/"+p_photo;
                     trans.add(t);
                 }
 
@@ -260,6 +309,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
     //ToolBar
     private void SetToolBar() {
 

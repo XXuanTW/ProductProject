@@ -1,6 +1,8 @@
 package com.example.user.productproject;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -13,6 +15,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,6 +25,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -35,8 +39,12 @@ public class MainProduct extends AppCompatActivity {
     TextView textBarCode;
     TextView textCheckTime;
     TextView textStock;
+    TextView textInventory;
     NavigationView liftmenu;
     DrawerLayout mainlayout;
+    ImageView ProductImg;
+
+    String imgurl;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,13 +58,44 @@ public class MainProduct extends AppCompatActivity {
         textBarCode = (TextView)findViewById(R.id.textBarCode);
         textCheckTime = (TextView)findViewById(R.id.textCheckTime);
         textStock = (TextView)findViewById(R.id.textStock);
+        textInventory = (TextView)findViewById(R.id.textInventory);
+        ProductImg = (ImageView)findViewById(R.id.ProductImgView);
         Bundle bundle = this.getIntent().getExtras();
         String BarcodeRead = bundle.getString("Barcode");
         SetToolBar();
         SetLifeMenu();
         String url = "http://www.itioi.com/TestP.php?shid=1&barcode="+BarcodeRead;
         new TransTask().execute(url);
+
     }
+
+    //ImgViewurl
+    private class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
+        ImageView imageView;
+
+        public DownloadImageFromInternet(ImageView imageView) {
+            this.imageView = imageView;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            String imageURL = urls[0];
+            Bitmap bimage = null;
+            try {
+                InputStream in = new java.net.URL(imageURL).openStream();
+                bimage = BitmapFactory.decodeStream(in);
+
+            } catch (Exception e) {
+                Log.e("Error Message", e.getMessage());
+                e.printStackTrace();
+            }
+            return bimage;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            imageView.setImageBitmap(result);
+        }
+    }
+
     //Json 解析
     class TransTask extends AsyncTask<String, Void, String> {
         protected String doInBackground(String... params) {
@@ -92,28 +131,33 @@ public class MainProduct extends AppCompatActivity {
                     JSONObject obj = array.getJSONObject(i);
                     String shname = obj.getString("sh_name");
                     String sh_id = obj.getString("sh_id");
+                    String p_id = obj.getString("p_id");
                     String p_name = obj.getString("p_name");
                     String p_no = obj.getString("p_no");
                     String p_barcode = obj.getString("p_barcode");
                     String p_inventory_date = obj.getString("p_inventory_date");
                     String p_photo = obj.getString("p_photo");
                     String p_count = obj.getString("p_count");
-                    Json t = new Json(shname,sh_id,p_name,p_no, p_barcode,p_inventory_date, p_photo,p_count);
-
+                    String p_inventory = obj.getString("p_inventory");
+                    Json t = new Json(shname,sh_id,p_id,p_name,p_no, p_barcode,p_inventory_date, p_photo,p_count,p_inventory);
+                    textInventory.setText(p_inventory);
                     textProduct.setText(p_name);
                     textWarehouse.setText(shname);
                     textProductID.setText(p_no);
                     textBarCode.setText(p_barcode);
                     textCheckTime.setText(p_inventory_date);
                     textStock.setText(p_count);
+                    imgurl = "http://p0520.com/admin/upload/product/"+p_photo;
                     trans.add(t);
                 }
+                new DownloadImageFromInternet(ProductImg).execute(imgurl);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
 
     }
+
     //ToolBar
     private void SetToolBar() {
 

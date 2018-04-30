@@ -152,8 +152,8 @@
                 android:layout_width="100pt"
                 android:layout_height="100pt"
                 android:layout_toRightOf="@+id/textImgText" />
-        </RelativeLayout>
-        <RelativeLayout
+            </RelativeLayout>
+            <RelativeLayout
             android:id="@+id/Stocktext"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -172,6 +172,29 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_toRightOf="@+id/textStocktext"
+                android:gravity="center_horizontal"
+                android:text=""
+                android:textSize="10pt" />
+        </RelativeLayout>
+        <RelativeLayout
+            android:id="@+id/Inventorytext"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/Stocktext">
+
+            <TextView
+                android:id="@+id/textInventorytext"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="盤點庫存："
+                android:textSize="10pt" />
+
+            <TextView
+                android:id="@+id/textInventory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/textInventorytext"
                 android:gravity="center_horizontal"
                 android:text=""
                 android:textSize="10pt" />
