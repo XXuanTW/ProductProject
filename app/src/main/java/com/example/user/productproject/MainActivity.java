@@ -27,6 +27,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.NumberPicker;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     TextView textBarCode;
     TextView textProduct;
     TextView textCheckTime;
-    EditText StockeditText;
+    NumberPicker StockeditText;
     Toolbar toolbar;
     NavigationView liftmenu;
     DrawerLayout mainlayout;
@@ -83,11 +84,17 @@ public class MainActivity extends AppCompatActivity {
         CamreaView = (SurfaceView) findViewById(R.id.CamareView);
         CheckButton = (Button)findViewById(R.id.CheckButton);
         ProductImg = (ImageView)findViewById(R.id.ProductImgView);
-        StockeditText = (EditText)findViewById(R.id.StockeditText);
+        StockeditText = (NumberPicker)findViewById(R.id.StockeditText);
         SetToolBar();
         SetLifeMenu();
+        //最大最小
+        StockeditText.setMaxValue(1000);
+        StockeditText.setMinValue(0);
+        //不可編輯
+        StockeditText.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
         new SpinnerList().execute("http://www.itioi.com/StoreHouse.php");
-
+        //不循環顯示
+        StockeditText.setWrapSelectorWheel(false);
         //QRcode掃描配置
         barcodeDetector = new BarcodeDetector.Builder(this)
                 .setBarcodeFormats(Barcode.ALL_FORMATS)
@@ -141,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
                             vibrator.vibrate(500);
                             textProduct.setText("");
                             textBarCode.setText("");
-                            StockeditText.setText("");
+                            StockeditText.setValue(0);
                             ProductImg.setImageDrawable(null);
                             textBarCode.setText(qrcodes.valueAt(0).displayValue);
                             runCode();
@@ -163,8 +170,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 int shidvalue = shid[textWareHouse.getSelectedItemPosition()];
-                if (!"".equals(StockeditText.getText().toString())) {
-                    int Stocke = Integer.valueOf(StockeditText.getText().toString());
+                if (!"".equals(StockeditText.getValue())) {
+                    int Stocke = Integer.valueOf(StockeditText.getValue());
                     url = "http://www.itioi.com/UPDATE.php?shid=";
                     url = url + shidvalue + "&pid=" + PID ;
                     url = url + "&inventory=" + Stocke;
@@ -306,7 +313,7 @@ public class MainActivity extends AppCompatActivity {
                     Json t = new Json(shname,sh_id,p_id,p_name,p_no, p_barcode,p_inventory_date, p_photo,p_count,p_inventory);
                     textProduct.setText(p_name);
                     textBarCode.setText(p_barcode);
-                    StockeditText.setText(p_count);
+                    StockeditText.setValue(Integer.valueOf(p_count));
                     PID = p_id;
                     imgurl = "http://p0520.com/admin/upload/product/"+p_photo;
                     trans.add(t);
