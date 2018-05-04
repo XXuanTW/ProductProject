@@ -2,10 +2,14 @@ package com.example.user.productproject;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -15,10 +19,12 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.SparseArray;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -67,9 +73,12 @@ public class MainActivity extends AppCompatActivity {
     String url;
     String imgurl;
     String PID;
+    String dataSQL;
+    String userID;
     ImageView ProductImg;
     String[] sh;
     Integer[] shid;
+    SQLdata DH = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,12 +96,15 @@ public class MainActivity extends AppCompatActivity {
         StockeditText = (NumberPicker)findViewById(R.id.StockeditText);
         SetToolBar();
         SetLifeMenu();
+        opendialog();
+        DH = new SQLdata(this);
+        addurl();
         //最大最小
         StockeditText.setMaxValue(1000);
         StockeditText.setMinValue(0);
         //不可編輯
         StockeditText.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
-        new SpinnerList().execute("http://www.itioi.com/StoreHouse.php");
+        new SpinnerList().execute("http://"+dataSQL+"/StoreHouse.php");
         //不循環顯示
         StockeditText.setWrapSelectorWheel(false);
         //QRcode掃描配置
@@ -157,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
 
                         private void runCode() {
                             int shidvalue = shid[textWareHouse.getSelectedItemPosition()];
-                            url ="http://www.itioi.com/TestP.php?shid=";
+                            url = "http://"+dataSQL+"/TestP.php?shid=";
                             url = url + shidvalue;
                             url = url + "&barcode=";
                             url = url+textBarCode.getText().toString();
@@ -172,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
                 int shidvalue = shid[textWareHouse.getSelectedItemPosition()];
                 if (!"".equals(StockeditText.getValue())) {
                     int Stocke = Integer.valueOf(StockeditText.getValue());
-                    url = "http://www.itioi.com/UPDATE.php?shid=";
+                    url = "http://"+dataSQL+"/UPDATE.php?shid=";
                     url = url + shidvalue + "&pid=" + PID ;
                     url = url + "&inventory=" + Stocke;
 
@@ -180,6 +192,48 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void opendialog() {
+        LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
+        View subView = inflater.inflate(R.layout.dialog_layout, null);
+        final EditText userEditText = (EditText)subView.findViewById(R.id.userEditText);
+        Drawable drawable = getResources().getDrawable(R.mipmap.ic_launcher);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("員工編號");
+        builder.setMessage("請輸入員工編號");
+        builder.setView(subView);
+        AlertDialog alertDialog = builder.create();
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+               userID = userEditText.getText().toString();
+                Toast.makeText(MainActivity.this, "員工編號："+userID, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Toast.makeText(MainActivity.this, "Cancel", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        builder.show();
+    }
+
+
+    private void addurl() {
+
+        SQLiteDatabase db = DH.getWritableDatabase();
+        Cursor cursor = db.query("data", new String[]{"_id", "_url"}, null, null, null, null, null);
+        while (cursor.moveToNext()){
+            dataSQL= cursor.getString(1);
+        }
+
+
     }
 
     //ImgViewurl
@@ -377,6 +431,12 @@ public class MainActivity extends AppCompatActivity {
                     Bundle bundle = new Bundle();
                     bundle.putString("Barcode",textBarCode.getText().toString());
                     intent.putExtras(bundle);
+                    startActivity(intent);
+                    return true;
+                }else if(id == R.id.action_setting){
+                    Intent intent = new Intent();
+                    intent.setClass(MainActivity.this, MainSetting.class);
+                    MainActivity.this.finish();
                     startActivity(intent);
                     return true;
                 }

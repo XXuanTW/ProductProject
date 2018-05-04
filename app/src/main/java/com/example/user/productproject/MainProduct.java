@@ -1,6 +1,8 @@
 package com.example.user.productproject;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -43,30 +45,43 @@ public class MainProduct extends AppCompatActivity {
     NavigationView liftmenu;
     DrawerLayout mainlayout;
     ImageView ProductImg;
-
+    String dataSQL;
     String imgurl;
+    SQLdata DH = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_product);
-        toolbar = (Toolbar)findViewById(R.id.toolbar);
-        liftmenu = (NavigationView)findViewById(R.id.liftmenu);
-        mainlayout = (DrawerLayout)findViewById(R.id.Product_layout);
-        textProduct = (TextView)findViewById(R.id.textProduct);
-        textWarehouse = (TextView)findViewById(R.id.textWarehouse);
-        textProductID = (TextView)findViewById(R.id.textProductID);
-        textBarCode = (TextView)findViewById(R.id.textBarCode);
-        textCheckTime = (TextView)findViewById(R.id.textCheckTime);
-        textStock = (TextView)findViewById(R.id.textStock);
-        textInventory = (TextView)findViewById(R.id.textInventory);
-        ProductImg = (ImageView)findViewById(R.id.ProductImgView);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        liftmenu = (NavigationView) findViewById(R.id.liftmenu);
+        mainlayout = (DrawerLayout) findViewById(R.id.Product_layout);
+        textProduct = (TextView) findViewById(R.id.textProduct);
+        textWarehouse = (TextView) findViewById(R.id.textWarehouse);
+        textProductID = (TextView) findViewById(R.id.textProductID);
+        textBarCode = (TextView) findViewById(R.id.textBarCode);
+        textCheckTime = (TextView) findViewById(R.id.textCheckTime);
+        textStock = (TextView) findViewById(R.id.textStock);
+        textInventory = (TextView) findViewById(R.id.textInventory);
+        ProductImg = (ImageView) findViewById(R.id.ProductImgView);
         Bundle bundle = this.getIntent().getExtras();
-        String BarcodeRead = bundle.getString("Barcode");
+        if (!"".equals(bundle) && bundle != null) {
+            String BarcodeRead = bundle.getString("Barcode");
+            DH = new SQLdata(this);
+            addurl();
+            String url = "http://" + dataSQL + "/TestP.php?shid=1&barcode="+BarcodeRead;
+            new TransTask().execute(url);
+        }
         SetToolBar();
         SetLifeMenu();
-        String url = "http://www.itioi.com/TestP.php?shid=1&barcode="+BarcodeRead;
-        new TransTask().execute(url);
 
+    }
+
+    private void addurl() {
+        SQLiteDatabase db = DH.getWritableDatabase();
+        Cursor cursor = db.query("data", new String[]{"_id", "_url"}, null, null, null, null, null);
+        while (cursor.moveToNext()){
+            dataSQL= cursor.getString(1);
+        }
     }
 
     //ImgViewurl
@@ -204,6 +219,12 @@ public class MainProduct extends AppCompatActivity {
                 }else if(id == R.id.action_inventory){
                     Intent intent = new Intent();
                     intent.setClass(MainProduct.this, MainActivity.class);
+                    MainProduct.this.finish();
+                    startActivity(intent);
+                    return true;
+                }else if(id == R.id.action_setting){
+                    Intent intent = new Intent();
+                    intent.setClass(MainProduct.this, MainSetting.class);
                     MainProduct.this.finish();
                     startActivity(intent);
                     return true;
