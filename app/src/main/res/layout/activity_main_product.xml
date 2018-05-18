@@ -199,6 +199,29 @@
                 android:text=""
                 android:textSize="10pt" />
         </RelativeLayout>
+        <RelativeLayout
+            android:id="@+id/InventoryUIDtext"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/Inventorytext">
+
+            <TextView
+                android:id="@+id/textInventoryUIDtext"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="盤點人員："
+                android:textSize="10pt" />
+
+            <TextView
+                android:id="@+id/textUID"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/textInventoryUIDtext"
+                android:gravity="center_horizontal"
+                android:text=""
+                android:textSize="10pt" />
+        </RelativeLayout>
     </RelativeLayout>
 
     <android.support.design.widget.NavigationView

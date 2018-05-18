@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextClock;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,6 +43,7 @@ public class MainProduct extends AppCompatActivity {
     TextView textCheckTime;
     TextView textStock;
     TextView textInventory;
+    TextView textUID;
     NavigationView liftmenu;
     DrawerLayout mainlayout;
     ImageView ProductImg;
@@ -63,12 +65,14 @@ public class MainProduct extends AppCompatActivity {
         textStock = (TextView) findViewById(R.id.textStock);
         textInventory = (TextView) findViewById(R.id.textInventory);
         ProductImg = (ImageView) findViewById(R.id.ProductImgView);
+        textUID = (TextView) findViewById(R.id.textUID);
         Bundle bundle = this.getIntent().getExtras();
         if (!"".equals(bundle) && bundle != null) {
             String BarcodeRead = bundle.getString("Barcode");
+            String shid = bundle.getString("shid");
             DH = new SQLdata(this);
             addurl();
-            String url = "http://" + dataSQL + "/TestP.php?shid=1&barcode="+BarcodeRead;
+            String url = "http://" + dataSQL + "/TestP.php?shid="+shid+"&barcode="+BarcodeRead;
             new TransTask().execute(url);
         }
         SetToolBar();
@@ -154,7 +158,8 @@ public class MainProduct extends AppCompatActivity {
                     String p_photo = obj.getString("p_photo");
                     String p_count = obj.getString("p_count");
                     String p_inventory = obj.getString("p_inventory");
-                    Json t = new Json(shname,sh_id,p_id,p_name,p_no, p_barcode,p_inventory_date, p_photo,p_count,p_inventory);
+                    String p_inventory_eid = obj.getString("p_inventory_eid");
+                    Json t = new Json(shname,sh_id,p_id,p_name,p_no, p_barcode,p_inventory_date, p_photo,p_count,p_inventory,p_inventory_eid);
                     textInventory.setText(p_inventory);
                     textProduct.setText(p_name);
                     textWarehouse.setText(shname);
@@ -162,6 +167,7 @@ public class MainProduct extends AppCompatActivity {
                     textBarCode.setText(p_barcode);
                     textCheckTime.setText(p_inventory_date);
                     textStock.setText(p_count);
+                    textUID.setText(p_inventory_eid);
                     imgurl = "http://p0520.com/admin/upload/product/"+p_photo;
                     trans.add(t);
                 }

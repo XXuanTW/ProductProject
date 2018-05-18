@@ -1,15 +1,26 @@
 package com.example.user.productproject;
 
 import android.Manifest;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.nfc.NfcAdapter;
+import android.nfc.tech.IsoDep;
+import android.nfc.tech.MifareClassic;
+import android.nfc.tech.MifareUltralight;
+import android.nfc.tech.Ndef;
+import android.nfc.tech.NfcA;
+import android.nfc.tech.NfcB;
+import android.nfc.tech.NfcF;
+import android.nfc.tech.NfcV;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -25,6 +36,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -79,6 +91,19 @@ public class MainActivity extends AppCompatActivity {
     String[] sh;
     Integer[] shid;
     SQLdata DH = null;
+    String [] arrayNFC = new String [4];
+    String NFCdata;
+    private final String[][] techList = new String[][] {
+            new String[] {
+                    NfcA.class.getName(),
+                    NfcB.class.getName(),
+                    NfcF.class.getName(),
+                    NfcV.class.getName(),
+                    IsoDep.class.getName(),
+                    MifareClassic.class.getName(),
+                    MifareUltralight.class.getName(), Ndef.class.getName()
+            }
+    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -187,6 +212,7 @@ public class MainActivity extends AppCompatActivity {
                     url = "http://"+dataSQL+"/UPDATE.php?shid=";
                     url = url + shidvalue + "&pid=" + PID ;
                     url = url + "&inventory=" + Stocke;
+                    url = url + "&uid=" + userID;
 
                     new TransTask().execute(url);
                 }
@@ -198,13 +224,12 @@ public class MainActivity extends AppCompatActivity {
         LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
         View subView = inflater.inflate(R.layout.dialog_layout, null);
         final EditText userEditText = (EditText)subView.findViewById(R.id.userEditText);
-        Drawable drawable = getResources().getDrawable(R.mipmap.ic_launcher);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("員工編號");
         builder.setMessage("請輸入員工編號");
         builder.setView(subView);
-        AlertDialog alertDialog = builder.create();
+        userEditText.setText(NFCdata);
 
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
@@ -214,17 +239,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton("使用NFC自動輸入", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Toast.makeText(MainActivity.this, "Cancel", Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, "請將NFC靠近來讀取", Toast.LENGTH_LONG).show();
             }
         });
 
         builder.show();
     }
 
-
+    //資料庫讀取
     private void addurl() {
 
         SQLiteDatabase db = DH.getWritableDatabase();
@@ -236,6 +261,89 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    //NFC Read
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        return true;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // creating pending intent:
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+        // creating intent receiver for NFC events:
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(NfcAdapter.ACTION_TAG_DISCOVERED);
+        filter.addAction(NfcAdapter.ACTION_NDEF_DISCOVERED);
+        filter.addAction(NfcAdapter.ACTION_TECH_DISCOVERED);
+        // enabling foreground dispatch for getting intent from NFC event:
+        NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        nfcAdapter.enableForegroundDispatch(this, pendingIntent, new IntentFilter[]{filter}, this.techList);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // disabling foreground dispatch:
+        NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        nfcAdapter.disableForegroundDispatch(this);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        if (intent.getAction().equals(NfcAdapter.ACTION_TAG_DISCOVERED)) {
+            String NFC = ByteArrayToHexString(intent.getByteArrayExtra(NfcAdapter.EXTRA_ID));
+            int x = 0;
+            for (int i=0 ; i<NFC.length() ; i+=2)
+            {
+                arrayNFC[x]= NFC.substring(i,i+2);
+                x=x+1;
+            }
+            String stringNFC ="";
+            for (int j=3 ; j>=0;j--){
+                stringNFC+=arrayNFC[j];
+            }
+//            textNFC.setText(stringNFC);
+            String []arrayHex = new String[stringNFC.length()];
+
+            for (int i = 0 ; i < stringNFC.length() ; i++){
+                arrayHex[i]=stringNFC.substring(i,i+1);
+            }
+            int y = 1;
+            long dec = 0;
+            for(int i = stringNFC.length()-1 ; i >= 0 ; i--){
+                dec = Long.valueOf(Integer.valueOf(arrayHex[i],16))*y +dec;
+                y=y*16;
+            }
+//            Toast.makeText(this, String.format("%010d",dec), Toast.LENGTH_SHORT).show();
+            NFCdata = String.format("%010d",dec);
+            opendialog();
+
+
+        }
+    }
+
+    private String ByteArrayToHexString(byte [] inarray) {
+        int i, j, in;
+        String [] hex = {"0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"};
+        String out= "";
+
+        for(j = 0 ; j < inarray.length ; ++j)
+        {
+            in = (int) inarray[j] & 0xff;
+            i = (in >> 4) & 0x0f;
+            out = out + hex[i];
+            i = in & 0x0f;
+            out = out + hex[i];
+        }
+//        for(i =0; i<inarray.length; i++){
+//            out += Integer.toHexString(inarray[i] & 0xFF);
+//        }
+
+        return out;
+    }
     //ImgViewurl
     private class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
         ImageView imageView;
@@ -364,7 +472,8 @@ public class MainActivity extends AppCompatActivity {
                     String p_photo = obj.getString("p_photo");
                     String p_count = obj.getString("p_count");
                     String p_inventory = obj.getString("p_inventory");
-                    Json t = new Json(shname,sh_id,p_id,p_name,p_no, p_barcode,p_inventory_date, p_photo,p_count,p_inventory);
+                    String p_inventory_eid = obj.getString("p_inventory_eid");
+                    Json t = new Json(shname,sh_id,p_id,p_name,p_no, p_barcode,p_inventory_date, p_photo,p_count,p_inventory,p_inventory_eid);
                     textProduct.setText(p_name);
                     textBarCode.setText(p_barcode);
                     StockeditText.setValue(Integer.valueOf(p_count));
@@ -430,6 +539,7 @@ public class MainActivity extends AppCompatActivity {
                     MainActivity.this.finish();
                     Bundle bundle = new Bundle();
                     bundle.putString("Barcode",textBarCode.getText().toString());
+                    bundle.putString("shid",String.valueOf(shid[textWareHouse.getSelectedItemPosition()]));
                     intent.putExtras(bundle);
                     startActivity(intent);
                     return true;
